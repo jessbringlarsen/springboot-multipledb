@@ -1,53 +1,65 @@
 package dk.bringlarsen.springboot.multipledb.product.config;
 
+import com.zaxxer.hikari.HikariDataSource;
+import dk.bringlarsen.springboot.multipledb.product.model.Product;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.sql.DataSource;
-import java.util.HashMap;
-
 @Configuration
-@EnableJpaRepositories(
-        basePackages = "dk.bringlarsen.springboot.multipledb.product.repository",
-        entityManagerFactoryRef = "productEntityManager",
-        transactionManagerRef = "productTransactionManager")
 public class ProductJPAConfig {
 
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource.product")
-    public DataSource productDataSource() {
-        return DataSourceBuilder.create().build();
+    @ConfigurationProperties("spring.datasource.product")
+    public DataSourceProperties productDatasourceProperties() {
+        return new DataSourceProperties();
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean productEntityManager() {
+    @ConfigurationProperties(prefix = "spring.datasource.product.configuration")
+    public HikariDataSource productDataSource() {
+        return productDatasourceProperties().initializeDataSourceBuilder().type(HikariDataSource.class).build();
+    }
+
+    @Bean
+    public LocalContainerEntityManagerFactoryBean productEntityManagerFactory(EntityManagerFactoryBuilder builder) {
+        return builder
+                .dataSource(productDataSource())
+                .packages(Product.class)
+                .persistenceUnit("product")
+                .build();
+    }
+
+    @Bean
+    public PlatformTransactionManager productTransactionManager(EntityManagerFactoryBuilder builder){
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(productEntityManagerFactory(builder).getObject());
+        transactionManager.setDataSource(productDataSource());
+        return transactionManager;
+    }
+
+
+
+    /*@Primary
+    @Bean(name = "userEntityManager")
+    @PersistenceContext(unitName = "user")
+    public LocalContainerEntityManagerFactoryBean userEntityManager() {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(productDataSource());
-        em.setPackagesToScan(new String[]{"dk.bringlarsen.springboot.multipledb.product.model"});
+        em.setDataSource(userDataSource());
+        em.setPackagesToScan(new String[]{"dk.bringlarsen.springboot.multipledb.user.model"});
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
         HashMap<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
-        properties.put("hibernate.ddl-auto", "update");
+      //  properties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
         em.setJpaPropertyMap(properties);
-        em.setPersistenceUnitName("product");
+        em.setPersistenceUnitName("user");
 
         return em;
-    }
-
-    @Bean
-    public PlatformTransactionManager productTransactionManager() {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(productEntityManager().getObject());
-        return transactionManager;
-    }
+    }*/
 }

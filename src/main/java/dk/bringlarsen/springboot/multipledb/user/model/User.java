@@ -1,13 +1,15 @@
 package dk.bringlarsen.springboot.multipledb.user.model;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
-@Table
+@Table(name = "user_table")
 public class User {
 
     @Id
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     private String name;
 
@@ -16,31 +18,55 @@ public class User {
 
     private int age;
 
-    public int getId() {
+    public Integer getId() {
         return id;
+    }
+
+    public User setId(Integer id) {
+        this.id = id;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public User setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public User setEmail(String email) {
         this.email = email;
+        return this;
     }
 
     public int getAge() {
         return age;
     }
 
-    public void setAge(int age) {
+    public User setAge(int age) {
         this.age = age;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id &&
+                age == user.age &&
+                name.equals(user.name) &&
+                email.equals(user.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, email, age);
     }
 }
