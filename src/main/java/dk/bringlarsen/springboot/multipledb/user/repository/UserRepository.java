@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,6 +23,10 @@ public class UserRepository {
 
     public Optional<User> findById(Integer id) {
         return Optional.ofNullable(entityManager.find(User.class, id));
+    }
+
+    public List<User> findAll() {
+        return entityManager.createQuery("select u from User u").getResultList();
     }
 
     public void flushAndClear() {
