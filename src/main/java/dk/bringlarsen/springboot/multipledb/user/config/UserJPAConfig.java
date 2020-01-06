@@ -48,22 +48,4 @@ public class UserJPAConfig {
         transactionManager.setEntityManagerFactory(entityManagerFactory(builder).getObject());
         return transactionManager;
     }
-
-    /*@Primary
-    @Bean(name = "userEntityManager")
-    @PersistenceContext(unitName = "user")
-    public LocalContainerEntityManagerFactoryBean userEntityManager() {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(userDataSource());
-        em.setPackagesToScan(new String[]{"dk.bringlarsen.springboot.multipledb.user.model"});
-
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
-        HashMap<String, Object> properties = new HashMap<>();
-      //  properties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
-        em.setJpaPropertyMap(properties);
-        em.setPersistenceUnitName("user");
-
-        return em;
-    }*/
 }
