@@ -1,11 +1,12 @@
 package dk.bringlarsen.springboot.multipledb.user.repository;
 
 import dk.bringlarsen.springboot.multipledb.user.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,8 +14,13 @@ import java.util.Optional;
 @Transactional(value = "transactionManager")
 public class UserRepository {
 
-    @PersistenceContext(unitName = "users")
+    //@PersistenceContext(unitName = "users") - Inject the EM by using the JPAContext to avoid relying on unitName
     EntityManager entityManager;
+
+    @Autowired
+    public UserRepository(JpaContext context) {
+        this.entityManager = context.getEntityManagerByManagedType(User.class);
+    }
 
     public User save(User user) {
         entityManager.persist(user);
